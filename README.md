@@ -1,2 +1,85 @@
-# Target-Market-Finder
-For PBM Members
+# Target Market Finder
+
+A tool for PBMH students to log their past events and get a data-backed
+picture of who their ideal wedding and corporate clients actually are —
+based on the Bankable Bookings Bootcamp target-market exercise.
+
+## What it does (v1)
+
+1. Student logs in.
+2. Student logs past events one at a time (type, category, price, profit,
+   who booked them, how they found you, and a "would do again" / "never
+   again" flag).
+3. Dashboard shows those events grouped by category, with count and
+   average revenue/profit per category, sorted — so the highest-value
+   category is obvious without a spreadsheet.
+4. Once enough events are logged, the app drafts a "Mad Lib" style
+   target-market profile (one for weddings, one for corporate) using the
+   top category, top lead sources, and most common decision-maker.
+5. Student edits that draft by hand (revenue isn't the whole story — joy
+   and gut feel matter too, per the original exercise) and saves a final
+   version they can come back to any time.
+
+## Stack
+
+- **Next.js** — the app itself (React, App Router)
+- **Supabase** — database + login (email magic link)
+- **Vercel** — hosting/deploys
+- **GitHub** — where the code lives; Vercel deploys from this repo
+
+## One-time setup
+
+### 1. Create a Supabase project
+- Go to supabase.com → New Project.
+- Once it's created, open **SQL Editor** and paste in the contents of
+  `sql/schema.sql` (in this repo) and run it. This creates the two
+  tables the app needs.
+- Go to **Project Settings → API**. You'll need two values from here in
+  step 3: the **Project URL** and the **anon public key**.
+
+### 2. Push this code to GitHub
+- Create a new empty repo on GitHub (no README/license — this folder
+  already has one).
+- From this folder:
+  ```
+  git init
+  git add .
+  git commit -m "Initial scaffold"
+  git branch -M main
+  git remote add origin <your-repo-url>
+  git push -u origin main
+  ```
+
+### 3. Connect Vercel
+- Go to vercel.com → New Project → import the GitHub repo you just
+  created.
+- Before deploying, add these two environment variables (from step 1):
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- Deploy. Vercel will redeploy automatically every time you push to
+  `main`.
+
+### 4. Turn on email login in Supabase
+- In Supabase, go to **Authentication → Providers** and make sure
+  **Email** is enabled (it is by default). That's all v1 needs — no
+  password, just a magic link to the student's email.
+
+## Running it on your own machine (optional, before deploying)
+
+```
+npm install
+cp .env.local.example .env.local   # then fill in your Supabase values
+npm run dev
+```
+
+## What's deliberately NOT in v1
+
+- No CSV import — events are entered one at a time by hand.
+- No editable taxonomy — categories are fixed (see `lib/taxonomy.ts`).
+  If you want to add or change categories later, that file is the only
+  place to touch.
+- No connection to the separate profit calculator — profit is typed in
+  by hand per event.
+
+These were conscious scope cuts to keep v1 small enough to actually
+ship. Happy to revisit any of them once this is live and being used.
