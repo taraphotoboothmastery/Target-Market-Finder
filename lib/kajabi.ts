@@ -13,8 +13,14 @@
 const KAJABI_API_BASE = "https://api.kajabi.com";
 
 export const ALLOWED_OFFER_IDS = [
-  // New Thrive + SCALE — 5 offers total covering their different price
-  // points. Update this list here if an offer is added or retired.
+  "2151111655", // Photo Booth Mastery - The New Thrive ($2,500/yr, full membership)
+  "2151332113", // Thrive - Founding Members Rate ($150/mo, full membership)
+  "2151314626", // Hub - The New Thrive 2026 - Signature ($149/mo, VIP Alumni full inclusion)
+  "2151314224", // Thrive 2026 Coaching Calls Upgrade ($49/mo, VIP Alumni add-on — also grants access)
+  "2150660407", // SCALE Monthly Payment Plan ($497/mo)
+  "2151009853", // SCALE - Pay in Full ($4,999)
+  // New Thrive + SCALE, including the $49 coaching-call upgrade add-on.
+  // Update this list here if an offer is added or retired.
 ] as const;
 
 type KajabiToken = { access_token: string; expires_in: number };

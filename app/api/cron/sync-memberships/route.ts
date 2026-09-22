@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { ALLOWED_OFFER_IDS, fetchPurchasesForOffers } from "@/lib/kajabi";
 
-// TODO: fill in ALLOWED_OFFER_IDS in lib/kajabi.ts with the real Kajabi
-// offer IDs for New Thrive + SCALE before relying on this in production.
-// This route will run and clear out the memberships table (0 active
-// members) until that list is populated — it will not silently grant
-// access to anyone.
 
 export const dynamic = "force-dynamic";
 
@@ -22,17 +17,6 @@ export async function GET(req: NextRequest) {
   const siteId = process.env.KAJABI_SITE_ID;
   if (!siteId) {
     return NextResponse.json({ error: "Missing KAJABI_SITE_ID" }, { status: 500 });
-  }
-
-  if (ALLOWED_OFFER_IDS.length === 0) {
-    return NextResponse.json(
-      {
-        warning:
-          "ALLOWED_OFFER_IDS is empty in lib/kajabi.ts — add the New Thrive + SCALE offer IDs before this sync can grant access to anyone.",
-        synced: 0,
-      },
-      { status: 200 }
-    );
   }
 
   try {
