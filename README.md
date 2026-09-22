@@ -27,6 +27,14 @@ based on the Bankable Bookings Bootcamp target-market exercise.
 - **Vercel** — hosting/deploys
 - **GitHub** — where the code lives; Vercel deploys from this repo
 
+## Access
+
+Gated to active **New Thrive** and **SCALE** members only, following the same
+pattern as the Pricing Blueprint App: a scheduled job syncs Kajabi purchases
+into a `memberships` table, and every protected page checks that table
+before rendering. See "Finish the membership sync" below — this part is not
+fully wired up yet.
+
 ## One-time setup
 
 ### 1. Create a Supabase project
@@ -63,6 +71,46 @@ based on the Bankable Bookings Bootcamp target-market exercise.
 - In Supabase, go to **Authentication → Providers** and make sure
   **Email** is enabled (it is by default). That's all v1 needs — no
   password, just a magic link to the student's email.
+
+### 5. Add the service role key
+- In Supabase, go to **Project Settings → API** and copy the
+  **`service_role`** key (different from the anon key — keep this one
+  secret, never expose it to the browser).
+- Add it to Vercel as `SUPABASE_SERVICE_ROLE_KEY`.
+- This is what lets the app check membership status server-side without
+  exposing the `memberships` table to logged-in users' browsers.
+
+## Finish the membership sync
+
+The gate is fully wired up: a scheduled job checks Kajabi every 15 minutes
+and keeps the `memberships` table current, and every protected page checks
+that table before rendering.
+
+This uses Kajabi's own public API (not the Kajabi MCP tool used to look
+things up in chat — a live deployment needs its own credentials):
+
+1. In Kajabi, go to **Settings → Public API** and create API credentials
+   (this needs the Pro plan, or the $25/mo Public API add-on on other
+   plans). Copy the **Client ID** and **Client Secret**.
+2. Add these to Vercel:
+   - `KAJABI_CLIENT_ID`
+   - `KAJABI_CLIENT_SECRET`
+   - `KAJABI_SITE_ID` (`2147637375` — already set in `.env.local.example`)
+   - `CRON_SECRET` (any random string — this stops anyone else from
+     triggering the sync by hitting the URL directly; Vercel sends it
+     automatically as a Bearer token when the cron job runs)
+3. That's it — `vercel.json` already schedules the sync every 15 minutes,
+   matching the cadence your Pricing Blueprint App uses.
+
+The allowed offer IDs (New Thrive + SCALE, 5 offers total covering their
+different price points) are listed as constants at the top of
+`app/api/cron/sync-memberships/route.ts`. If you add or retire an offer in
+Kajabi later, that's the one place to update.
+
+To test it before waiting for the cron schedule, visit
+`/api/cron/sync-memberships` directly in a browser once deployed — without
+`CRON_SECRET` set, this works from anywhere, which is fine for testing but
+means you should set `CRON_SECRET` before this app has real users.
 
 ## Running it on your own machine (optional, before deploying)
 
