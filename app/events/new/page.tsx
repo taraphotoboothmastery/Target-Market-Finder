@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useMembershipGate } from "@/lib/useMembershipGate";
 import {
   WEDDING_TIERS,
   CORPORATE_CATEGORIES,
@@ -13,6 +14,7 @@ import {
 
 export default function NewEventPage() {
   const router = useRouter();
+  const { status } = useMembershipGate();
   const [segment, setSegment] = useState<"wedding" | "corporate">("wedding");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
@@ -61,6 +63,14 @@ export default function NewEventPage() {
     setSaving(false);
     if (error) setError(error.message);
     else router.push("/dashboard");
+  }
+
+  if (status !== "allowed") {
+    return (
+      <main>
+        <p className="muted">Loading…</p>
+      </main>
+    );
   }
 
   return (

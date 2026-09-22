@@ -45,3 +45,20 @@ create policy "Users can manage their own profiles"
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+-- Membership gate (New Thrive + SCALE only).
+-- Populated by /api/cron/sync-memberships from Kajabi; never written to
+-- directly by the app, and never readable by logged-in users' browsers
+-- (no policy grants anon/authenticated access — only the service role,
+-- used server-side, bypasses RLS here).
+create table if not exists memberships (
+  email text primary key,
+  kajabi_contact_id text,
+  offer_ids text[] not null default '{}',
+  status text not null default 'inactive' check (status in ('active', 'inactive')),
+  synced_at timestamptz default now()
+);
+
+alter table memberships enable row level security;
+-- Deliberately no policies: only the service-role key (server-side only)
+-- can read or write this table.

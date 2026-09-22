@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useMembershipGate } from "@/lib/useMembershipGate";
 
 type EventRow = {
   segment: "wedding" | "corporate";
@@ -60,6 +61,7 @@ function buildDraft(segment: "wedding" | "corporate", events: EventRow[]) {
 
 export default function ProfilePage({ params }: { params: { segment: string } }) {
   const router = useRouter();
+  const { status } = useMembershipGate();
   const segment = params.segment === "corporate" ? "corporate" : "wedding";
 
   const [loading, setLoading] = useState(true);
@@ -72,6 +74,7 @@ export default function ProfilePage({ params }: { params: { segment: string } })
   const [isFinalized, setIsFinalized] = useState(false);
 
   useEffect(() => {
+    if (status !== "allowed") return;
     async function load() {
       const { data: sessionData } = await supabase.auth.getSession();
       const userId = sessionData.session?.user.id;
@@ -111,7 +114,7 @@ export default function ProfilePage({ params }: { params: { segment: string } })
       setLoading(false);
     }
     load();
-  }, [router, segment]);
+  }, [router, segment, status]);
 
   async function handleSave(finalize: boolean) {
     setSaving(true);
@@ -136,7 +139,7 @@ export default function ProfilePage({ params }: { params: { segment: string } })
     setSaving(false);
   }
 
-  if (loading) {
+  if (status !== "allowed" || loading) {
     return (
       <main>
         <p className="muted">Loading…</p>

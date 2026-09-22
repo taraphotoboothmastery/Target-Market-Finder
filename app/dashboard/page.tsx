@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useMembershipGate } from "@/lib/useMembershipGate";
 
 type EventRow = {
   id: string;
@@ -51,17 +51,13 @@ function summarize(events: EventRow[]): CategorySummary[] {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
+  const { status } = useMembershipGate();
   const [events, setEvents] = useState<EventRow[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (status !== "allowed") return;
     async function load() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        router.replace("/login");
-        return;
-      }
       const { data } = await supabase
         .from("events")
         .select("*")
@@ -70,9 +66,9 @@ export default function DashboardPage() {
       setLoading(false);
     }
     load();
-  }, [router]);
+  }, [status]);
 
-  if (loading) {
+  if (status !== "allowed" || loading) {
     return (
       <main>
         <p className="muted">Loading…</p>
